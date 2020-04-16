@@ -24,7 +24,7 @@ describe('Modeler', function() {
     container = TestContainer.get(this);
   });
 
-  function createModeler(xml, done) {
+  function createModeler(xml) {
 
     clearBpmnJS();
 
@@ -37,39 +37,53 @@ describe('Modeler', function() {
 
     setBpmnJS(modeler);
 
-    modeler.importXML(xml, function(err, warnings) {
-      done(err, warnings, modeler);
+    return new Promise(function(resolve) {
+      modeler.importXML(xml).then(function(result) {
+        resolve({ error: null, warnings: result.warnings, modeler: modeler });
+      }).catch(function(err) {
+        resolve({ error: err, warnings: err.warnings, modeler: modeler });
+      });
     });
   }
 
 
   it('should import simple process', function(done) {
     var xml = require('../fixtures/bpmn/simple.bpmn');
-    createModeler(xml, done);
+    createModeler(xml).then(function(result) {
+      done(result.error, result.warnings);
+    });
   });
 
 
   it('should import collaboration', function(done) {
     var xml = require('../fixtures/bpmn/collaboration-message-flows.bpmn');
-    createModeler(xml, done);
+    createModeler(xml).then(function(result) {
+      done(result.error, result.warnings);
+    });
   });
 
 
   it('should import nested lanes', function(done) {
     var xml = require('./features/modeling/lanes/lanes.bpmn');
-    createModeler(xml, done);
+    createModeler(xml).then(function(result) {
+      done(result.error, result.warnings);
+    });
   });
 
 
   it('should import ioSpecification', function(done) {
     var xml = require('./features/modeling/input-output/DataInputOutput.bpmn');
-    createModeler(xml, done);
+    createModeler(xml).then(function(result) {
+      done(result.error, result.warnings);
+    });
   });
 
 
   it.skip('should import complex', function(done) {
     var xml = require('../fixtures/bpmn/complex.bpmn');
-    createModeler(xml, done);
+    createModeler(xml).then(function(result) {
+      done(result.error, result.warnings);
+    });
   });
 
 
@@ -77,10 +91,12 @@ describe('Modeler', function() {
     var xml = require('../fixtures/bpmn/empty-definitions.bpmn');
 
     // given
-    createModeler(xml, function(err, warnings, modeler) {
+    createModeler(xml).then(function(result) {
+
+      var modeler = result.modeler;
 
       // when
-      modeler.importXML(xml, function(err, warnings) {
+      modeler.importXML(xml).catch(function(err) {
 
         // then
         expect(err.message).to.equal('no diagram to display');
@@ -97,11 +113,15 @@ describe('Modeler', function() {
     var xml = require('../fixtures/bpmn/simple.bpmn');
 
     // given
-    createModeler(xml, function(err, warnings, modeler) {
+    createModeler(xml).then(function(result) {
+
+      var modeler = result.modeler;
 
       // when
       // mimic re-import of same diagram
-      modeler.importXML(xml, function(err, warnings) {
+      modeler.importXML(xml).then(function(result) {
+
+        var warnings = result.warnings;
 
         // then
         expect(warnings).to.be.empty;
@@ -118,7 +138,10 @@ describe('Modeler', function() {
     var multipleXML = require('../fixtures/bpmn/multiple-diagrams.bpmn');
 
     // given
-    createModeler(multipleXML, function(err, warnings, modeler) {
+    createModeler(multipleXML).then(function(result) {
+
+      var modeler = result.modeler;
+      var err = result.error;
 
       if (err) {
         return done(err);
@@ -149,7 +172,10 @@ describe('Modeler', function() {
 
     it('should allow translation of multi-lingual strings', function(done) {
 
-      createModeler(xml, function(err, warnings, modeler) {
+      createModeler(xml).then(function(result) {
+
+        var modeler = result.modeler;
+        var err = result.error;
 
         // given
         var translate = modeler.get('translate');
@@ -177,7 +203,10 @@ describe('Modeler', function() {
 
       var xml = require('../fixtures/bpmn/simple.bpmn');
 
-      createModeler(xml, function(err, warnings, modeler) {
+      createModeler(xml).then(function(result) {
+
+        var modeler = result.modeler;
+        var err = result.error;
 
         // given
         var overlays = modeler.get('overlays'),
@@ -265,7 +294,10 @@ describe('Modeler', function() {
 
       var xml = require('../fixtures/bpmn/simple.bpmn');
 
-      createModeler(xml, function(err, warnings, modeler) {
+      createModeler(xml).then(function(result) {
+
+        var modeler = result.modeler;
+        var err = result.error;
 
         // given
         var bendpointMove = modeler.get('bendpointMove'),
@@ -298,7 +330,9 @@ describe('Modeler', function() {
 
       var xml = require('../fixtures/bpmn/simple.bpmn');
 
-      createModeler(xml, function(err, warnings, modeler) {
+      createModeler(xml).then(function(result) {
+
+        var modeler = result.modeler;
 
         // given
         var modeling = modeler.get('modeling'),
@@ -344,7 +378,7 @@ describe('Modeler', function() {
       });
 
       // when
-      modeler.importXML(xml, function(err) {
+      modeler.importXML(xml).then(function() {
 
         var canvasConfig = modeler.get('config.canvas');
 
@@ -385,7 +419,7 @@ describe('Modeler', function() {
       var elementRegistry = modeler.get('elementRegistry');
 
       // when
-      modeler.importXML(xml, function(err) {
+      modeler.importXML(xml).then(function() {
 
         var subProcess = elementRegistry.get('SubProcess_1').businessObject;
         var bpmnEdge = elementRegistry.get('SequenceFlow_3').businessObject.di;
@@ -412,9 +446,9 @@ describe('Modeler', function() {
       var elementRegistry = modeler.get('elementRegistry');
 
       // when
-      modeler.importXML(someXML, function() {
+      modeler.importXML(someXML).then(function() {
 
-        modeler.importXML(otherXML, function() {
+        modeler.importXML(otherXML).then(function() {
 
           var task = elementRegistry.get('Task_1').businessObject;
 
@@ -440,7 +474,7 @@ describe('Modeler', function() {
 
     var modeler = new Modeler({ container: container });
 
-    modeler.importXML(xml, function(err) {
+    modeler.importXML(xml).catch(function(err) {
 
       expect(err).to.exist;
 
@@ -461,7 +495,10 @@ describe('Modeler', function() {
 
       var xml = require('../fixtures/bpmn/simple.bpmn');
 
-      createModeler(xml, function(err, warnings, modeler) {
+      createModeler(xml).then(function(result) {
+
+        var modeler = result.modeler;
+        var err = result.error;
 
         expect(modeler.get('bpmnjs')).to.equal(modeler);
 
@@ -494,13 +531,13 @@ describe('Modeler', function() {
           canvas = modeler.get('canvas');
 
       // when
-      modeler.importXML(someXML, function() {
+      modeler.importXML(someXML).then(function() {
 
         // then
         expect(modeler.get('canvas')).to.equal(canvas);
         expect(modeler.get('eventBus')).to.equal(eventBus);
 
-        modeler.importXML(otherXML, function() {
+        modeler.importXML(otherXML).then(function() {
 
           // then
           expect(modeler.get('canvas')).to.equal(canvas);
@@ -518,7 +555,10 @@ describe('Modeler', function() {
       var xml = require('../fixtures/bpmn/simple.bpmn');
 
       // when
-      createModeler(xml, function(err, warnings, modeler) {
+      createModeler(xml).then(function(result) {
+
+        var modeler = result.modeler;
+        var err = result.error;
 
         // then
         expect(modeler.get('alignElements')).to.exist;

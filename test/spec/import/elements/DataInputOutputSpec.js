@@ -13,7 +13,9 @@ describe('import - data input/output', function() {
       var xml = require('./DataInputOutput.bpmn');
 
       // given
-      bootstrapViewer(xml).call(this, function(err) {
+      bootstrapViewer(xml).call(this).then(function(result) {
+
+        var err = result.error;
 
         // when
         inject(function(elementRegistry) {

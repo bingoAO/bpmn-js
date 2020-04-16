@@ -48,7 +48,7 @@ import translationModule from './TranslationCollector';
 
 export function bootstrapBpmnJS(BpmnJS, diagram, options, locals) {
 
-  return function(done) {
+  return function() {
     var testContainer;
 
     // Make sure the test container is an optional dependency and we fall back
@@ -118,7 +118,13 @@ export function bootstrapBpmnJS(BpmnJS, diagram, options, locals) {
 
     setBpmnJS(instance);
 
-    instance.importXML(diagram, done);
+    return new Promise(function(resolve) {
+      instance.importXML(diagram).then(function(result) {
+        resolve({ error: null, warnings: result.warnings });
+      }).catch(function(err) {
+        resolve({ error: err, warnings: err.warnings });
+      });
+    });
   };
 }
 
@@ -234,6 +240,26 @@ export function clearBpmnJS() {
 
     BPMN_JS = null;
   }
+}
+
+// This method always resolves.
+// It helps us to do done(err) within the same block.
+export function createViewer(container, viewerInstance, xml, diagramId) {
+
+  clearBpmnJS();
+
+  var viewer = new viewerInstance({ container: container });
+
+  setBpmnJS(viewer);
+
+  return new Promise(function(resolve) {
+
+    viewer.importXML(xml, diagramId).then(function(result) {
+      return resolve({ warnings: result.warnings, viewer: viewer });
+    }).catch(function(err) {
+      return resolve({ error: err, viewer: viewer, warnings: err.warnings });
+    });
+  });
 }
 
 export function setBpmnJS(instance) {

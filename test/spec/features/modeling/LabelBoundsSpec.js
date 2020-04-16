@@ -12,11 +12,15 @@ var DELTA = 2;
 
 describe('label bounds', function() {
 
-  function createModeler(xml, done) {
+  function createModeler(xml) {
     var modeler = new Modeler({ container: container });
 
-    modeler.importXML(xml, function(err, warnings) {
-      done(err, warnings, modeler);
+    return new Promise(function(resolve) {
+      modeler.importXML(xml).then(function(result) {
+        resolve({ error: null, warnings: result.warnings, modeler: modeler });
+      }).catch(function(err) {
+        resolve({ error: err, warnings: err.warnings, modeler: modeler });
+      });
     });
   }
 
@@ -30,7 +34,9 @@ describe('label bounds', function() {
 
     it('should import simple label process', function(done) {
       var xml = require('./LabelBoundsSpec.simple.bpmn');
-      createModeler(xml, done);
+      createModeler(xml).then(function(result) {
+        done(result.error, result.warnings);
+      });
     });
 
   });
@@ -232,7 +238,10 @@ describe('label bounds', function() {
 
       var xml = require('./LabelBoundsSpec.simple.bpmn');
 
-      createModeler(xml, function(err, warnings, modeler) {
+      createModeler(xml).then(function(result) {
+
+        var err = result.error;
+        var modeler = result.modeler;
 
         if (err) {
           return done(err);
@@ -275,7 +284,10 @@ describe('label bounds', function() {
 
       var xml = require('./LabelBoundsSpec.simple.bpmn');
 
-      createModeler(xml, function(err, warnings, modeler) {
+      createModeler(xml).then(function(result) {
+
+        var err = result.error;
+        var modeler = result.modeler;
 
         if (err) {
           return done(err);
@@ -321,7 +333,10 @@ describe('label bounds', function() {
       // strip windows line breaks (if any)
       xml = xml.replace(/\r/g, '');
 
-      createModeler(xml, function(err, warnings, modeler) {
+      createModeler(xml).then(function(result) {
+
+        var err = result.error;
+        var modeler = result.modeler;
 
         if (err) {
           return done(err);

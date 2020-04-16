@@ -5,8 +5,7 @@ import EditorActionsModule from 'lib/features/editor-actions';
 import TestContainer from 'mocha-test-container-support';
 
 import {
-  setBpmnJS,
-  clearBpmnJS
+  createViewer
 } from 'test/TestHelper';
 
 
@@ -18,25 +17,12 @@ describe('NavigatedViewer', function() {
     container = TestContainer.get(this);
   });
 
-  function createViewer(xml, done) {
-
-    clearBpmnJS();
-
-    var viewer = new NavigatedViewer({
-      container: container
-    });
-
-    setBpmnJS(viewer);
-
-    viewer.importXML(xml, function(err, warnings) {
-      done(err, warnings, viewer);
-    });
-  }
-
 
   it('should import simple process', function(done) {
     var xml = require('../fixtures/bpmn/simple.bpmn');
-    createViewer(xml, done);
+    createViewer(container, NavigatedViewer, xml).then(function(result) {
+      done(result.error);
+    });
   });
 
 
@@ -89,7 +75,11 @@ describe('NavigatedViewer', function() {
 
     it('should include zoomScroll', function(done) {
 
-      createViewer(xml, function(err, warnings, viewer) {
+      createViewer(container, NavigatedViewer, xml).then(function(result) {
+
+        var viewer = result.viewer;
+        var err = result.error;
+
         expect(viewer.get('zoomScroll')).to.exist;
 
         done(err);
@@ -98,7 +88,11 @@ describe('NavigatedViewer', function() {
 
 
     it('should include moveCanvas', function(done) {
-      createViewer(xml, function(err, warnings, viewer) {
+      createViewer(container, NavigatedViewer, xml).then(function(result) {
+
+        var viewer = result.viewer;
+        var err = result.error;
+
         expect(viewer.get('moveCanvas')).to.exist;
 
         done(err);

@@ -13,7 +13,9 @@ describe('import - associations', function() {
       var xml = require('./AssociationSpec.text-annotation.bpmn');
 
       // given
-      bootstrapViewer(xml)(function(err) {
+      bootstrapViewer(xml)().then(function(result) {
+
+        var err = result.error;
 
         // when
         inject(function(elementRegistry) {
@@ -35,7 +37,9 @@ describe('import - associations', function() {
       var xml = require('./AssociationSpec.compensation.bpmn');
 
       // given
-      bootstrapViewer(xml)(function(err) {
+      bootstrapViewer(xml)().then(function(result) {
+
+        var err = result.error;
 
         // when
         inject(function(elementRegistry) {
@@ -45,7 +49,7 @@ describe('import - associations', function() {
           // then
           expect(association).to.exist;
 
-          done();
+          done(err);
         })();
 
       });
@@ -79,7 +83,9 @@ describe('import - associations', function() {
       var xml = require('./AssociationSpec.data-association.bpmn');
 
       // given
-      bootstrapViewer(xml)(function(err) {
+      bootstrapViewer(xml)().then(function(result) {
+
+        var err = result.error;
 
         // then
         expectRendered([
@@ -97,7 +103,9 @@ describe('import - associations', function() {
       var xml = require('./AssociationSpec.data-input-output.bpmn');
 
       // given
-      bootstrapViewer(xml)(function(err) {
+      bootstrapViewer(xml)().then(function(result) {
+
+        var err = result.error;
 
         // then
         expectRendered([
@@ -115,7 +123,9 @@ describe('import - associations', function() {
       var xml = require('./AssociationSpec.collaboration.bpmn');
 
       // given
-      bootstrapViewer(xml)(function(err) {
+      bootstrapViewer(xml)().then(function(result) {
+
+        var err = result.error;
 
         // then
         expectRendered([
@@ -133,7 +143,9 @@ describe('import - associations', function() {
       var xml = require('./AssociationSpec.events.bpmn');
 
       // given
-      bootstrapViewer(xml)(function(err) {
+      bootstrapViewer(xml)().then(function(result) {
+
+        var err = result.error;
 
         // then
         expectRendered([
@@ -151,7 +163,9 @@ describe('import - associations', function() {
       var xml = require('./AssociationSpec.data-association.bpmn');
 
       // given
-      bootstrapViewer(xml)(function(err) {
+      bootstrapViewer(xml)().then(function(result) {
+
+        var err = result.error;
 
         // then
         expectRendered([

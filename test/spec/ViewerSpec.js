@@ -9,12 +9,7 @@ import Viewer from 'lib/Viewer';
 import inherits from 'inherits';
 
 import {
-  isFunction
-} from 'min-dash';
-
-import {
-  setBpmnJS,
-  clearBpmnJS
+  createViewer
 } from 'test/TestHelper';
 
 
@@ -27,29 +22,15 @@ describe('Viewer', function() {
   });
 
 
-  function createViewer(xml, diagramId, done) {
-    if (isFunction(diagramId)) {
-      done = diagramId;
-      diagramId = null;
-    }
-
-    clearBpmnJS();
-
-    var viewer = new Viewer({ container: container });
-
-    setBpmnJS(viewer);
-
-    viewer.importXML(xml, diagramId, function(err, warnings) {
-      done(err, warnings, viewer);
-    });
-  }
-
-
   it('should import simple process', function(done) {
     var xml = require('../fixtures/bpmn/simple.bpmn');
 
     // when
-    createViewer(xml, function(err, warnings, viewer) {
+    createViewer(container, Viewer, xml).then(function(result) {
+
+      var err = result.error;
+      var warnings = result.warnings;
+      var viewer = result.viewer;
 
       // then
       expect(err).not.to.exist;
@@ -70,14 +51,16 @@ describe('Viewer', function() {
     var xml = require('../fixtures/bpmn/simple.bpmn');
 
     // given
-    createViewer(xml, function(err, warnings, viewer) {
+    createViewer(container, Viewer, xml).then(function(result) {
+
+      var viewer = result.viewer;
 
       // when
       // mimic re-import of same diagram
-      viewer.importXML(xml, function(err, warnings) {
+      viewer.importXML(xml).then(function(result) {
 
         // then
-        expect(warnings).to.be.empty;
+        expect(result.warnings).to.be.empty;
 
         done();
       });
@@ -102,7 +85,10 @@ describe('Viewer', function() {
 
       var xml = require('../fixtures/bpmn/simple.bpmn');
 
-      createViewer(xml, function(err, warnings, viewer) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var err = result.error;
+        var viewer = result.viewer;
 
         // when
         var overlays = viewer.get('overlays'),
@@ -176,7 +162,9 @@ describe('Viewer', function() {
 
       var xml = 'invalid stuff';
 
-      createViewer(xml, function(err) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var err = result.error;
 
         expect(err).to.exist;
 
@@ -192,7 +180,10 @@ describe('Viewer', function() {
       var xml = require('../fixtures/bpmn/error/di-plane-no-bpmn-element.bpmn');
 
       // when
-      createViewer(xml, function(err, warnings) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var err = result.error;
+        var warnings = result.warnings;
 
         // then
         expect(err).not.to.exist;
@@ -215,7 +206,10 @@ describe('Viewer', function() {
       var xml = require('../fixtures/bpmn/error/categoryValue.bpmn');
 
       // when
-      createViewer(xml, function(err, warnings) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var err = result.error;
+        var warnings = result.warnings;
 
         // then
         expect(err).not.to.exist;
@@ -235,7 +229,10 @@ describe('Viewer', function() {
       var xml = require('../fixtures/bpmn/error/missing-namespace.bpmn');
 
       // when
-      createViewer(xml, function(err, warnings) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var err = result.error;
+        var warnings = result.warnings;
 
         // then
         expect(err).to.exist;
@@ -254,7 +251,10 @@ describe('Viewer', function() {
       var xml = require('../fixtures/bpmn/error/duplicate-ids.bpmn');
 
       // when
-      createViewer(xml, function(err, warnings) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var err = result.error;
+        var warnings = result.warnings;
 
         // then
         expect(err).not.to.exist;
@@ -273,7 +273,9 @@ describe('Viewer', function() {
       var xml = require('../fixtures/bpmn/empty-definitions.bpmn');
 
       // when
-      createViewer(xml, function(err, warnings) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var err = result.error;
 
         // then
         expect(err.message).to.eql('no diagram to display');
@@ -291,7 +293,10 @@ describe('Viewer', function() {
 
       var xml = require('../fixtures/bpmn/simple.bpmn');
 
-      createViewer(xml, function(err, warnings, viewer) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var viewer = result.viewer;
+        var err = result.error;
 
         expect(viewer.get('bpmnjs')).to.equal(viewer);
 
@@ -324,13 +329,13 @@ describe('Viewer', function() {
           canvas = viewer.get('canvas');
 
       // when
-      viewer.importXML(someXML, function() {
+      viewer.importXML(someXML).then(function() {
 
         // then
         expect(viewer.get('canvas')).to.equal(canvas);
         expect(viewer.get('eventBus')).to.equal(eventBus);
 
-        viewer.importXML(otherXML, function() {
+        viewer.importXML(otherXML).then(function() {
 
           // then
           expect(viewer.get('canvas')).to.equal(canvas);
@@ -338,6 +343,9 @@ describe('Viewer', function() {
 
           done();
         });
+      }).catch(function(err) {
+
+        done(err);
       });
 
     });
@@ -365,11 +373,14 @@ describe('Viewer', function() {
       viewer = new Viewer({ container: container, modules: testModules });
 
       // when
-      viewer.importXML(xml, function(err) {
+      viewer.importXML(xml).catch(function(err) {
 
         // then
         expect(err.message).to.equal('No provider for "bpmnImporter"! (Resolving: bpmnImporter)');
         done();
+      }).catch(function(err) {
+
+        done(err);
       });
 
     });
@@ -381,11 +392,14 @@ describe('Viewer', function() {
       viewer = new Viewer({ container: container, additionalModules: testModules });
 
       // when
-      viewer.importXML(xml, function(err) {
+      viewer.importXML(xml).then(function(result) {
 
         // then
         var logger = viewer.get('logger');
         expect(logger.called).to.be.true;
+
+        done();
+      }).catch(function(err) {
 
         done(err);
       });
@@ -425,7 +439,7 @@ describe('Viewer', function() {
       });
 
       // when
-      viewer.importXML(xml, function(err, warnings) {
+      viewer.importXML(xml).then(function(result) {
 
         var elementRegistry = viewer.get('elementRegistry');
 
@@ -446,6 +460,9 @@ describe('Viewer', function() {
 
         expect(extensionElements.values).to.have.length(1);
         expect(extensionElements.values[0].$instanceOf('camunda:InputOutput')).to.be.true;
+
+        done();
+      }).catch(function(err) {
 
         done(err);
       });
@@ -477,7 +494,7 @@ describe('Viewer', function() {
       });
 
       // when
-      viewer.importXML(xml, function(err, warnings) {
+      viewer.importXML(xml).then(function(result) {
 
         var elementRegistry = viewer.get('elementRegistry');
 
@@ -500,6 +517,9 @@ describe('Viewer', function() {
         expect(extensionElements.values[0].$instanceOf('camunda:InputOutput')).to.be.true;
 
         expect(extensionElements.values[1].$instanceOf('custom:CustomSendElement')).to.be.true;
+
+        done();
+      }).catch(function(err) {
 
         done(err);
       });
@@ -535,7 +555,7 @@ describe('Viewer', function() {
       });
 
       // when
-      viewer.importXML(xml, function(err, warnings) {
+      viewer.importXML(xml).then(function(result) {
 
         var elementRegistry = viewer.get('elementRegistry');
 
@@ -558,6 +578,9 @@ describe('Viewer', function() {
         expect(extensionElements.values[0].$instanceOf('camunda:InputOutput')).to.be.true;
 
         expect(extensionElements.values[1].$instanceOf('custom:CustomSendElementOverride')).to.be.true;
+
+        done();
+      }).catch(function(err) {
 
         done(err);
       });
@@ -582,7 +605,7 @@ describe('Viewer', function() {
       });
 
       // when
-      viewer.importXML(xml, function(err) {
+      viewer.importXML(xml).then(function(result) {
 
         var canvasConfig = viewer.get('config.canvas');
 
@@ -590,6 +613,9 @@ describe('Viewer', function() {
         expect(canvasConfig.deferUpdate).to.be.true;
 
         done();
+      }).catch(function(err) {
+
+        done(err);
       });
 
     });
@@ -603,11 +629,14 @@ describe('Viewer', function() {
 
         var viewer = new Viewer({ container: container });
 
-        viewer.importXML(xml, function(err, warnings) {
+        viewer.importXML(xml).then(function(result) {
 
           expect(viewer._container.parentNode).to.equal(container);
 
-          done(err, warnings);
+          done(null, result.warnings);
+        }).catch(function(err) {
+
+          done(err);
         });
       });
 
@@ -618,11 +647,14 @@ describe('Viewer', function() {
 
         var viewer = new Viewer();
 
-        viewer.importXML(xml, function(err, warnings) {
+        viewer.importXML(xml).then(function(result) {
 
           expect(viewer._container.parentNode).to.equal(null);
 
-          done(err, warnings);
+          done(null, result.warnings);
+        }).catch(function(err) {
+
+          done(err);
         });
       });
 
@@ -660,7 +692,7 @@ describe('Viewer', function() {
       });
 
       // when
-      viewer.importXML(xml, function(err) {
+      viewer.importXML(xml).then(function(result) {
 
         // then
         expect(events).to.eql([
@@ -670,6 +702,9 @@ describe('Viewer', function() {
           [ 'import.render.complete', [ 'error', 'warnings' ] ],
           [ 'import.done', [ 'error', 'warnings' ] ]
         ]);
+
+        done();
+      }).catch(function(err) {
 
         done(err);
       });
@@ -701,7 +736,9 @@ describe('Viewer', function() {
       it('should import default without bpmnDiagram specified', function(done) {
 
         // when
-        createViewer(multipleXML, function(err) {
+        createViewer(container, Viewer, multipleXML).then(function(result) {
+
+          var err = result.error;
 
           // then
           done(err);
@@ -712,7 +749,9 @@ describe('Viewer', function() {
       it('should import bpmnDiagram specified by id', function(done) {
 
         // when
-        createViewer(multipleXML, 'BpmnDiagram_2', function(err) {
+        createViewer(container, Viewer, multipleXML, 'BpmnDiagram_2').then(function(result) {
+
+          var err = result.error;
 
           // then
           done(err);
@@ -726,7 +765,9 @@ describe('Viewer', function() {
         var xml = require('../fixtures/bpmn/multiple-diagrams.bpmn');
 
         // when
-        createViewer(xml, 'Diagram_IDontExist', function(err) {
+        createViewer(container, Viewer, xml, 'Diagram_IDontExist').then(function(result) {
+
+          var err = result.error;
 
           // then
           expect(err).to.exist;
@@ -784,7 +825,11 @@ describe('Viewer', function() {
           definitions;
 
       beforeEach(function(done) {
-        createViewer(xml, null, function(error, _, tmpViewer) {
+        createViewer(container, Viewer, xml, null).then(function(result) {
+
+          var error = result.error;
+          var tmpViewer = result.viewer;
+
           if (error) {
             return done(error);
           }
@@ -867,7 +912,11 @@ describe('Viewer', function() {
           definitions;
 
       beforeEach(function(done) {
-        createViewer(multipleXML, null, function(error, _, tmpViewer) {
+        createViewer(container, Viewer, multipleXML).then(function(result) {
+
+          var error = result.error;
+          var tmpViewer = result.viewer;
+
           if (error) {
             return done(error);
           }
@@ -978,7 +1027,10 @@ describe('Viewer', function() {
     it('should open the first diagram if id was not provided', function(done) {
 
       // when
-      createViewer(multipleXMLSimple, diagram1, function(err, warnings, viewer) {
+      createViewer(container, Viewer, multipleXMLSimple, diagram1).then(function(result) {
+
+        var err = result.error;
+        var viewer = result.viewer;
 
         if (err) {
           return done(err);
@@ -1004,7 +1056,11 @@ describe('Viewer', function() {
     it('should switch between diagrams', function(done) {
 
       // when
-      createViewer(multipleXMLSimple, diagram1, function(err, warnings, viewer) {
+      createViewer(container, Viewer, multipleXMLSimple, diagram1).then(function(result) {
+
+        var err = result.error;
+        var warnings = result.warnings;
+        var viewer = result.viewer;
 
         // then
         if (err) {
@@ -1045,7 +1101,11 @@ describe('Viewer', function() {
     it('should switch between diagrams with overlapping DI', function(done) {
 
       // when
-      createViewer(multipleXMLOverlappingDI, diagram1, function(err, warnings, viewer) {
+      createViewer(container, Viewer, multipleXMLOverlappingDI, diagram1).then(function(result) {
+
+        var err = result.error;
+        var warnings = result.warnings;
+        var viewer = result.viewer;
 
         // then
         if (err) {
@@ -1080,7 +1140,11 @@ describe('Viewer', function() {
     it('should switch between diagrams with laneSets', function(done) {
 
       // when
-      createViewer(multipleXMLWithLaneSet, diagram2, function(err, warnings, viewer) {
+      createViewer(container, Viewer, multipleXMLWithLaneSet, diagram2).then(function(result) {
+
+        var err = result.error;
+        var warnings = result.warnings;
+        var viewer = result.viewer;
 
         // then
         if (err) {
@@ -1143,7 +1207,11 @@ describe('Viewer', function() {
     it('should open with error if diagram does not exist', function(done) {
 
       // when
-      createViewer(multipleXMLSimple, diagram1, function(err, warnings, viewer) {
+      createViewer(container, Viewer, multipleXMLSimple, diagram1).then(function(result) {
+
+        var err = result.error;
+        var warnings = result.warnings;
+        var viewer = result.viewer;
 
         // then
         if (err) {
@@ -1177,7 +1245,7 @@ describe('Viewer', function() {
 
       var events = [];
 
-      viewer.importXML(multipleXMLSimple, diagram1, function(err) {
+      viewer.importXML(multipleXMLSimple, diagram1).then(function(result) {
 
         // given
         viewer.on([
@@ -1211,6 +1279,9 @@ describe('Viewer', function() {
 
           done(err);
         });
+      }).catch(function(err) {
+
+        done(err);
       });
     });
 
@@ -1224,7 +1295,10 @@ describe('Viewer', function() {
       // given
       var xml = require('../fixtures/bpmn/simple.bpmn');
 
-      createViewer(xml, function(err, warnings, viewer) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var err = result.error;
+        var viewer = result.viewer;
 
         // when
         viewer.saveXML({ format: true }).then(function(result) {
@@ -1236,7 +1310,7 @@ describe('Viewer', function() {
           expect(xml).to.contain('<bpmn2:definitions');
           expect(xml).to.contain('  ');
 
-          done();
+          done(err);
         }).catch(function(err) {
           done(err);
         });
@@ -1249,7 +1323,10 @@ describe('Viewer', function() {
 
       var xml = require('../fixtures/bpmn/simple.bpmn');
 
-      createViewer(xml, function(err, warnings, viewer) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var err = result.error;
+        var viewer = result.viewer;
 
         var events = [];
 
@@ -1268,7 +1345,7 @@ describe('Viewer', function() {
           ]);
         });
 
-        viewer.importXML(xml, function(err) {
+        viewer.importXML(xml).then(function(result) {
 
           // when
           viewer.saveXML().then(function() {
@@ -1280,10 +1357,13 @@ describe('Viewer', function() {
               [ 'saveXML.done', ['error', 'xml' ] ]
             ]);
 
-            done();
+            done(err);
           }).catch(function(err) {
             done(err);
           });
+        }).catch(function(err) {
+
+          done(err);
         });
       });
     });
@@ -1330,7 +1410,10 @@ describe('Viewer', function() {
       // given
       var xml = require('../fixtures/bpmn/simple.bpmn');
 
-      createViewer(xml, function(err, warnings, viewer) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var err = result.error;
+        var viewer = result.viewer;
 
         if (err) {
           return done(err);
@@ -1358,7 +1441,10 @@ describe('Viewer', function() {
       // given
       var xml = require('../fixtures/bpmn/complex.bpmn');
 
-      createViewer(xml, function(err, warnings, viewer) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var err = result.error;
+        var viewer = result.viewer;
 
         if (err) {
           return done(err);
@@ -1399,7 +1485,10 @@ describe('Viewer', function() {
         svgDoc.appendChild(rect);
       }
 
-      createViewer(xml, function(err, warnings, viewer) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var err = result.error;
+        var viewer = result.viewer;
 
         if (err) {
           return done(err);
@@ -1436,7 +1525,10 @@ describe('Viewer', function() {
 
       var xml = require('../fixtures/bpmn/simple.bpmn');
 
-      createViewer(xml, function(err, warnings, viewer) {
+      createViewer(container, Viewer, xml).then(function(result) {
+
+        var err = result.error;
+        var viewer = result.viewer;
 
         var events = [];
 
@@ -1454,7 +1546,7 @@ describe('Viewer', function() {
           ]);
         });
 
-        viewer.importXML(xml, function(err) {
+        viewer.importXML(xml).then(function(result) {
 
           // when
           viewer.saveSVG().then(function() {
@@ -1465,10 +1557,13 @@ describe('Viewer', function() {
               [ 'saveSVG.done', ['error', 'svg' ] ]
             ]);
 
-            done();
+            done(err);
           }).catch(function(err) {
             done(err);
           });
+        }).catch(function(err) {
+
+          done(err);
         });
       });
     });
@@ -1491,7 +1586,7 @@ describe('Viewer', function() {
       }, viewer);
 
       // then
-      viewer.importXML(xml, function(err) {
+      viewer.importXML(xml).then(function() {
         var eventBus = viewer.get('eventBus');
 
         var result = eventBus.fire('foo');
@@ -1499,6 +1594,9 @@ describe('Viewer', function() {
         expect(result).to.equal('bar');
 
         done();
+      }).catch(function(err) {
+
+        done(err);
       });
 
     });
@@ -1525,7 +1623,7 @@ describe('Viewer', function() {
       viewer.off('foo');
 
       // then
-      viewer.importXML(xml, function(err) {
+      viewer.importXML(xml).then(function() {
         var eventBus = viewer.get('eventBus');
 
         var result = eventBus.fire('foo');
@@ -1533,6 +1631,9 @@ describe('Viewer', function() {
         expect(result).not.to.exist;
 
         done();
+      }).catch(function(err) {
+
+        done(err);
       });
 
     });
@@ -1550,7 +1651,7 @@ describe('Viewer', function() {
       viewer.on('foo', 1000, handler);
 
       // when
-      viewer.importXML(xml, function(err) {
+      viewer.importXML(xml).then(function() {
         var eventBus = viewer.get('eventBus');
 
         // when
@@ -1561,6 +1662,9 @@ describe('Viewer', function() {
         expect(result).not.to.exist;
 
         done();
+      }).catch(function(err) {
+
+        done(err);
       });
 
     });
@@ -1595,7 +1699,7 @@ describe('Viewer', function() {
 
       var viewer = new Viewer();
 
-      viewer.importXML(xml, function(err, warnings) {
+      viewer.importXML(xml).then(function(result) {
 
         // assume
         expect(viewer._container.parentNode).not.to.exist;
@@ -1613,7 +1717,10 @@ describe('Viewer', function() {
         // should trigger resized
         expect(resizedSpy).to.have.been.called;
 
-        done(err, warnings);
+        done(null, result.warnings);
+      }).catch(function(err) {
+
+        done(err);
       });
     });
 
@@ -1628,7 +1735,7 @@ describe('Viewer', function() {
 
       var viewer = new Viewer({ container: container });
 
-      viewer.importXML(xml, function(err, warnings) {
+      viewer.importXML(xml).then(function(result) {
 
         // assume
         expect(viewer._container.parentNode).to.equal(container);
@@ -1639,7 +1746,10 @@ describe('Viewer', function() {
         // then
         expect(viewer._container.parentNode).not.to.exist;
 
-        done(err, warnings);
+        done(null, result.warnings);
+      }).catch(function(err) {
+
+        done(err);
       });
     });
 
@@ -1688,7 +1798,7 @@ describe('Viewer', function() {
       var viewer = new Viewer({ container: container }),
           elementRegistry = viewer.get('elementRegistry');
 
-      viewer.importXML(xml, function(err, warnings) {
+      viewer.importXML(xml).then(function(result) {
 
         var elements = elementRegistry.getAll();
 
@@ -1700,7 +1810,10 @@ describe('Viewer', function() {
           return el && el.businessObject && el.businessObject.di;
         }), 'at least one element still has di').to.be.false;
 
-        done(err, warnings);
+        done(null, result.warnings);
+      }).catch(function(err) {
+
+        done(err);
       });
     });
 

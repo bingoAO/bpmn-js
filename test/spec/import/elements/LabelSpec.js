@@ -10,19 +10,25 @@ describe('import - labels', function() {
 
     it('on flow nodes', function(done) {
       var xml = require('../../../fixtures/bpmn/import/labels/embedded.bpmn');
-      bootstrapViewer(xml)(done);
+      bootstrapViewer(xml)().then(function(result) {
+        done(result.error);
+      });
     });
 
 
     it('on pools and lanes', function(done) {
       var xml = require('../../../fixtures/bpmn/import/labels/collaboration.bpmn');
-      bootstrapViewer(xml)(done);
+      bootstrapViewer(xml)().then(function(result) {
+        done(result.error);
+      });
     });
 
 
     it('on message flows', function(done) {
       var xml = require('../../../fixtures/bpmn/import/labels/collaboration-message-flows.bpmn');
-      bootstrapViewer(xml)(done);
+      bootstrapViewer(xml)().then(function(result) {
+        done(result.error);
+      });
     });
 
   });
@@ -34,7 +40,9 @@ describe('import - labels', function() {
       var xml = require('../../../fixtures/bpmn/import/labels/external.bpmn');
 
       // given
-      bootstrapViewer(xml)(function(err) {
+      bootstrapViewer(xml)().then(function(result) {
+
+        var err = result.error;
 
         // when
         inject(function(elementRegistry) {
@@ -65,7 +73,9 @@ describe('import - labels', function() {
 
     it('without di', function(done) {
       var xml = require('../../../fixtures/bpmn/import/labels/external-no-di.bpmn');
-      bootstrapViewer(xml)(done);
+      bootstrapViewer(xml)().then(function(result) {
+        done(result.error);
+      });
     });
 
   });

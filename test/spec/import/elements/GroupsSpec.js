@@ -12,7 +12,9 @@ describe('import - groups', function() {
       var xml = require('./Groups.bpmn');
 
       // given
-      bootstrapModeler(xml)(function(err) {
+      bootstrapModeler(xml)().then(function(result) {
+
+        var err = result.error;
 
         // when
         inject(function(elementRegistry) {
