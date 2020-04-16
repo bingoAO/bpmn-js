@@ -829,7 +829,7 @@ describe('Viewer', function() {
         });
 
         // when
-        viewer.importDefinitions(definitions, function(err) {
+        viewer.importDefinitions(definitions).then(function() {
 
           // then
           expect(events).to.eql([
@@ -837,6 +837,8 @@ describe('Viewer', function() {
             [ 'import.render.complete', [ 'error', 'warnings' ] ]
           ]);
 
+          done();
+        }).catch(function(err) {
           done(err);
         });
       });
@@ -890,9 +892,12 @@ describe('Viewer', function() {
       it('should import default without bpmnDiagram specified', function(done) {
 
         // when
-        viewer.importDefinitions(definitions, function(err) {
+        viewer.importDefinitions(definitions).then(function() {
 
           // then
+          done();
+        }).catch(function(err) {
+
           done(err);
         });
       });
@@ -901,9 +906,12 @@ describe('Viewer', function() {
       it('should import bpmnDiagram specified by id', function(done) {
 
         // when
-        viewer.importDefinitions(definitions, 'BpmnDiagram_2', function(err) {
+        viewer.importDefinitions(definitions, 'BpmnDiagram_2').then(function() {
 
           // then
+          done();
+        }).catch(function(err) {
+
           done(err);
         });
       });
@@ -912,7 +920,7 @@ describe('Viewer', function() {
       it('should handle diagram not found', function(done) {
 
         // when
-        viewer.importDefinitions(definitions, 'Diagram_IDontExist', function(err) {
+        viewer.importDefinitions(definitions, 'Diagram_IDontExist').catch(function(err) {
 
           // then
           expect(err).to.exist;
