@@ -312,10 +312,14 @@ describe('Modeler', function() {
         });
 
         // test saving process to get XML
-        modeler.saveXML({ format: true }, function(err, xml) {
+        modeler.saveXML({ format: true }).then(function(result) {
+          var xml = result.xml;
+
           expect(xml).not.to.contain('di="[object Object]"');
 
           done();
+        }).catch(function(err) {
+          done(err);
         });
       });
     });

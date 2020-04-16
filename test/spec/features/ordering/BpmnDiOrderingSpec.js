@@ -185,10 +185,9 @@ describe('features/modeling - di ordering', function() {
 
 // helper
 function expectDiOrder(expectedOrder, done) {
-  getBpmnJS().saveXML({ format: true }, function(error, xml) {
-    if (error) {
-      return done(error);
-    }
+  getBpmnJS().saveXML({ format: true }).then(function(result) {
+
+    var xml = result.xml;
 
     var pattern = /bpmnElement="([^"]+)"/g,
         exportedOrder = [],
@@ -203,9 +202,11 @@ function expectDiOrder(expectedOrder, done) {
     try {
       expect(exportedOrder).to.eql(expectedOrder);
 
-      done();
+      return done();
     } catch (err) {
       return done(err);
     }
+  }).catch(function(err) {
+    return done(err);
   });
 }

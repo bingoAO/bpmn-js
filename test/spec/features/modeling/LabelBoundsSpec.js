@@ -247,13 +247,15 @@ describe('label bounds', function() {
         directEditing._textbox.content.innerText = 'BARBAZ';
         directEditing.complete();
 
-        modeler.saveXML({ format: true }, function(err, result) {
+        modeler.saveXML({ format: true }).then(function(result) {
+
+          var xml = result.xml;
 
           // strip spaces and line breaks after '>'
-          result = result.replace(/>\s+/g,'>');
+          xml = xml.replace(/>\s+/g,'>');
 
           // get label width and height from XML
-          var matches = result.match(/StartEvent_1_di.*?BPMNLabel.*?width="(\d*).*?height="(\d*)/);
+          var matches = xml.match(/StartEvent_1_di.*?BPMNLabel.*?width="(\d*).*?height="(\d*)/);
 
           var width = parseInt(matches[1]),
               height = parseInt(matches[2]);
@@ -261,6 +263,8 @@ describe('label bounds', function() {
           expect(width).to.equal(shape.label.width);
           expect(height).to.equal(shape.label.height);
 
+          done();
+        }).catch(function(err) {
           done(err);
         });
       });
@@ -286,13 +290,15 @@ describe('label bounds', function() {
         directEditing._textbox.content.innerText = 'BARBAZ';
         directEditing.complete();
 
-        modeler.saveXML({ format: true }, function(err, result) {
+        modeler.saveXML({ format: true }).then(function(result) {
+
+          var xml = result.xml;
 
           // strip spaces and line breaks after '>'
-          result = result.replace(/>\s+/g,'>');
+          xml = xml.replace(/>\s+/g,'>');
 
           // get label width and height from XML
-          var matches = result.match(/StartEvent_3_di.*?BPMNLabel.*?width="(\d*).*?height="(\d*)/);
+          var matches = xml.match(/StartEvent_3_di.*?BPMNLabel.*?width="(\d*).*?height="(\d*)/);
 
           var width = parseInt(matches[1]),
               height = parseInt(matches[2]);
@@ -300,6 +306,8 @@ describe('label bounds', function() {
           expect(width).to.equal(shape.label.width);
           expect(height).to.equal(shape.label.height);
 
+          done();
+        }).catch(function(err) {
           done(err);
         });
       });
@@ -319,14 +327,14 @@ describe('label bounds', function() {
           return done(err);
         }
 
-        modeler.saveXML({ format: true }, function(err, result) {
+        modeler.saveXML({ format: true }).then(function(result) {
 
-          if (err) {
-            return done(err);
-          }
+          var savedXML = result.xml;
 
-          expect(result).to.equal(xml);
+          expect(savedXML).to.equal(xml);
 
+          done();
+        }).catch(function(err) {
           done(err);
         });
       });

@@ -1214,7 +1214,9 @@ describe('Viewer', function() {
       createViewer(xml, function(err, warnings, viewer) {
 
         // when
-        viewer.saveXML({ format: true }, function(err, xml) {
+        viewer.saveXML({ format: true }).then(function(result) {
+
+          var xml = result.xml;
 
           // then
           expect(xml).to.contain('<?xml version="1.0" encoding="UTF-8"?>');
@@ -1222,6 +1224,8 @@ describe('Viewer', function() {
           expect(xml).to.contain('  ');
 
           done();
+        }).catch(function(err) {
+          done(err);
         });
       });
 
@@ -1254,7 +1258,7 @@ describe('Viewer', function() {
         viewer.importXML(xml, function(err) {
 
           // when
-          viewer.saveXML(function(err) {
+          viewer.saveXML().then(function() {
 
             // then
             expect(events).to.eql([
@@ -1263,6 +1267,8 @@ describe('Viewer', function() {
               [ 'saveXML.done', ['error', 'xml' ] ]
             ]);
 
+            done();
+          }).catch(function(err) {
             done(err);
           });
         });
