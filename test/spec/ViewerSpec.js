@@ -1318,11 +1318,14 @@ describe('Viewer', function() {
         }
 
         // when
-        viewer.saveSVG(function(err, svg) {
+        viewer.saveSVG().then(function(result) {
+
+          var svg = result.svg;
 
           // then
           expect(validSVG(svg)).to.be.true;
-
+          done();
+        }).catch(function(err) {
           done(err);
         });
       });
@@ -1345,7 +1348,9 @@ describe('Viewer', function() {
         var time = currentTime();
 
         // when
-        viewer.saveSVG(function(err, svg) {
+        viewer.saveSVG().then(function(result) {
+
+          var svg = result.svg;
 
           // then
           expect(validSVG(svg)).to.be.true;
@@ -1353,6 +1358,8 @@ describe('Viewer', function() {
           // no svg export should not take too long
           expect(currentTime() - time).to.be.below(1000);
 
+          done();
+        }).catch(function(err) {
           done(err);
         });
       });
@@ -1381,15 +1388,15 @@ describe('Viewer', function() {
 
         var svgDoc = viewer._container.childNodes[1].childNodes[1];
 
-
-
         appendTestRect(svgDoc);
         appendTestRect(svgDoc);
 
         expect(svgDoc.querySelectorAll('.outer-bound-marker')).to.exist;
 
         // when
-        viewer.saveSVG(function(err, svg) {
+        viewer.saveSVG().then(function(result) {
+
+          var svg = result.svg;
 
           var svgDoc = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
           svgDoc.innerHTML = svg;
@@ -1398,6 +1405,8 @@ describe('Viewer', function() {
           expect(validSVG(svg)).to.be.true;
           expect(svgDoc.querySelector('.outer-bound-marker')).to.be.null;
 
+          done();
+        }).catch(function(err) {
           done(err);
         });
       });
@@ -1429,7 +1438,7 @@ describe('Viewer', function() {
         viewer.importXML(xml, function(err) {
 
           // when
-          viewer.saveSVG(function() {
+          viewer.saveSVG().then(function() {
 
             // then
             expect(events).to.eql([
@@ -1437,6 +1446,8 @@ describe('Viewer', function() {
               [ 'saveSVG.done', ['error', 'svg' ] ]
             ]);
 
+            done();
+          }).catch(function(err) {
             done(err);
           });
         });
