@@ -125,16 +125,17 @@ describe('Modeler', function() {
       }
 
       // when
-      modeler.open('BpmnDiagram_2', function(err, warnings) {
+      modeler.open('BpmnDiagram_2').then(function(result) {
 
-        if (err) {
-          return done(err);
-        }
+        var warnings = result.warnings;
 
         // then
         expect(warnings).to.be.empty;
 
         done();
+      }).catch(function(err) {
+
+        done(err);
       });
 
     });

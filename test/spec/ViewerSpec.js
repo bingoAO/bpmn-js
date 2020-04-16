@@ -979,16 +979,15 @@ describe('Viewer', function() {
         // then
         var renderedDiagram = viewer.get('canvas').getRootElement().businessObject.di;
 
-        viewer.open(function(err) {
-
-          if (err) {
-            return done(err);
-          }
+        viewer.open().then(function() {
 
           // then
           expect(viewer.get('canvas').getRootElement().businessObject.di).to.equal(renderedDiagram);
 
           done();
+        }).catch(function(err) {
+
+          done(err);
         });
       });
     });
@@ -1010,12 +1009,10 @@ describe('Viewer', function() {
 
         expect(definitions).to.exist;
 
-        viewer.open(diagram2, function(err, warnings) {
+        viewer.open(diagram2).then(function(result) {
 
           // then
-          if (err) {
-            return done(err);
-          }
+          var warnings = result.warnings;
 
           expect(warnings).to.be.empty;
 
@@ -1027,6 +1024,9 @@ describe('Viewer', function() {
           expect(elementRegistry.get('Task_B')).to.exist;
 
           done();
+        }).catch(function(err) {
+
+          done(err);
         });
 
       });
@@ -1050,18 +1050,19 @@ describe('Viewer', function() {
 
         expect(definitions).to.exist;
 
-        viewer.open(diagram2, function(err, warnings) {
+        viewer.open(diagram2).then(function(result) {
 
           // then
-          if (err) {
-            return done(err);
-          }
+          var warnings = result.warnings;
 
           expect(warnings).to.be.empty;
 
           expect(definitions).to.equal(viewer.getDefinitions());
 
           done();
+        }).catch(function(err) {
+
+          done(err);
         });
 
       });
@@ -1084,12 +1085,10 @@ describe('Viewer', function() {
 
         expect(definitions).to.exist;
 
-        viewer.open(diagram1, function(err, warnings) {
+        viewer.open(diagram1).then(function(result) {
 
           // then
-          if (err) {
-            return done(err);
-          }
+          var warnings = result.warnings;
 
           expect(warnings).to.be.empty;
 
@@ -1101,6 +1100,9 @@ describe('Viewer', function() {
           expect(elementRegistry.get('Task_B')).to.not.exist;
 
           done();
+        }).catch(function(err) {
+
+          done(err);
         });
 
       });
@@ -1114,7 +1116,7 @@ describe('Viewer', function() {
       var viewer = new Viewer();
 
       // when
-      viewer.open(function(err) {
+      viewer.open().catch(function(err) {
 
         // then
         expect(err).to.exist;
@@ -1146,7 +1148,7 @@ describe('Viewer', function() {
 
         expect(definitions).to.exist;
 
-        viewer.open('Diagram_IDontExist', function(err) {
+        viewer.open('Diagram_IDontExist').catch(function(err) {
 
           // then
           expect(err).to.exist;
@@ -1188,13 +1190,16 @@ describe('Viewer', function() {
         });
 
         // when
-        viewer.open(diagram2, function(err) {
+        viewer.open(diagram2).then(function() {
 
           // then
           expect(events).to.eql([
             [ 'import.render.start', [ 'definitions' ] ],
             [ 'import.render.complete', [ 'error', 'warnings' ] ]
           ]);
+
+          done();
+        }).catch(function(err) {
 
           done(err);
         });
