@@ -18,7 +18,10 @@ describe('scenario - simple modeling', function() {
     var modeler = new Modeler({ container: container });
 
     // when
-    modeler.createDiagram(function(err) {
+    modeler.createDiagram().then(function() {
+
+      done();
+    }).catch(function(err) {
 
       done(err);
     });

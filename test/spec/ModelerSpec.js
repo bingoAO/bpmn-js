@@ -485,7 +485,11 @@ describe('Modeler', function() {
 
   it('should create new diagram', function(done) {
     var modeler = new Modeler({ container: container });
-    modeler.createDiagram(done);
+    modeler.createDiagram().then(function() {
+      done();
+    }).catch(function(err) {
+      done(err);
+    });
   });
 
 
